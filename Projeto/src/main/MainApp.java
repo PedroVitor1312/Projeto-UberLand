@@ -20,7 +20,7 @@ public class MainApp extends Application {
     
     @Override
     public void start(Stage stage) {
-        Label titulo = new Label("UBERLAND - Sistema de Táxi");
+        Label titulo = new Label("UBERLAND - Sistema de Transporte");
         titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
         
         lblStatus = new Label("Passageiros: 0 | Motoristas: 0 | Corridas: 0");
