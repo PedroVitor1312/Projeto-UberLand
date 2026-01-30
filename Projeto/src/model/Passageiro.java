@@ -34,7 +34,7 @@ public class Passageiro extends Pessoa {
     }
 
     /**
-     * Construtor simplificado (Requisito 2a)
+     * Construtor simplificado
      */
     public Passageiro(String nome, String cpf) {
         super(nome, cpf, LocalDate.now(), "", "N/A", "", "");
@@ -44,7 +44,7 @@ public class Passageiro extends Pessoa {
     }
 
     /**
-     * Construtor default (Requisito 2b)
+     * Construtor default
      */
     public Passageiro() {
         super("", "", LocalDate.now(), "", "N/A", "", "");
@@ -61,7 +61,6 @@ public class Passageiro extends Pessoa {
     public void registrarAvaliacao(double novaNota) {
         if (novaNota < 0 || novaNota > 5) return;
 
-        // média ponderada simples
         double somaNotas = this.notaMedia * this.numeroCorridas;
         this.notaMedia = (somaNotas + novaNota) / (this.numeroCorridas + 1);
     }
@@ -77,7 +76,6 @@ public class Passageiro extends Pessoa {
 
     /**
      * Verifica se o passageiro atingiu o critério para se tornar VIP.
-     * Regra: após CORRIDAS_PARA_VIP corridas.
      */
     public boolean verificarElegibilidadeVIP() {
         return this.numeroCorridas >= CORRIDAS_PARA_VIP;
@@ -85,37 +83,28 @@ public class Passageiro extends Pessoa {
 
     /**
      * Promove o passageiro para VIP.
-     * Retorna um objeto ClienteVip com desconto baseado na regra confidencial.
      */
     public ClienteVip promoverParaVIP() {
         if (!verificarElegibilidadeVIP()) {
             throw new IllegalStateException("Passageiro não atingiu o critério para VIP");
         }
 
-        // REGRA CONFIDENCIAL DA UBERLAND (Requisito j):
-        // Desconto baseado na nota média do passageiro
         double percentualDesconto = calcularDescontoVIP();
-        
         return new ClienteVip(this, percentualDesconto);
     }
 
     /**
-     * REGRA CONFIDENCIAL DA UBERLAND (Requisito j)
-     * Calcula o percentual de desconto baseado na nota média:
-     * - Nota 5.0: 15% de desconto
-     * - Nota 4.0-4.9: 10% de desconto  
-     * - Nota 3.0-3.9: 5% de desconto
-     * - Nota < 3.0: 2% de desconto (incentivo)
+     * Calcula o percentual de desconto baseado na nota média.
      */
     private double calcularDescontoVIP() {
         if (this.notaMedia >= 5.0) {
-            return 0.15; // 15%
+            return 0.15;
         } else if (this.notaMedia >= 4.0) {
-            return 0.10; // 10%
+            return 0.10;
         } else if (this.notaMedia >= 3.0) {
-            return 0.05; // 5%
+            return 0.05;
         } else {
-            return 0.02; // 2%
+            return 0.02;
         }
     }
 
@@ -159,6 +148,11 @@ public class Passageiro extends Pessoa {
         if (numeroCorridas >= 0) {
             this.numeroCorridas = numeroCorridas;
         }
+    }
+
+    // 🔥 ESTE MÉTODO RESOLVE SEU ERRO
+    public void setNome(String nome) {
+        super.setNome(nome);
     }
 
     // ====== TO STRING ======

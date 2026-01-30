@@ -251,10 +251,28 @@ public class TelaListarMotoristas {
             motorista.isAtivo() ? "Desativar" : "Ativar",
             motorista.isAtivo() ? "#FF9800" : "#4CAF50"
         );
+        
+        
         btnAtivarDesativar.setOnAction(e -> {
-            // Em sistema real, chamaria sistema.ativarDesativarMotorista()
-            mostrarMensagemAcao(motorista);
+            // Alterna o status do motorista
+            motorista.alternarStatus();
+
+            // Atualiza o texto do botão e a cor
+            btnAtivarDesativar.setText(motorista.isAtivo() ? "⏸️" : "▶️");
+            btnAtivarDesativar.setStyle(
+                "-fx-background-color: " + (motorista.isAtivo() ? "#FF9800" : "#4CAF50") + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 12px;" +
+                "-fx-background-radius: 3;" +
+                "-fx-padding: 5 10;"
+            );
+            Tooltip.install(btnAtivarDesativar, new Tooltip(motorista.isAtivo() ? "Desativar" : "Ativar"));
+
+            // Atualiza o label de status
+            lblStatus.setText(motorista.isAtivo() ? "✅ ATIVO" : "❌ INATIVO");
+            lblStatus.setTextFill(Color.web(motorista.isAtivo() ? "#4CAF50" : "#F44336"));
         });
+
         
         hboxAcoes.getChildren().addAll(btnDetalhes, btnAtivarDesativar);
         

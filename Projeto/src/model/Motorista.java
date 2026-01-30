@@ -9,15 +9,6 @@ import java.util.List;
  * Ela herda dados básicos da classe Pessoa.
  */
 public class Motorista extends Pessoa {
-
-    // Definição do enum StatusVeiculo (não depende do pacote enums)
-    public enum StatusVeiculo {
-        DISPONIVEL,
-        EM_VIAGEM,
-        FINALIZANDO,
-        NAO_DISPONIVEL,
-        EM_MANUTENCAO
-    }
     
     private String cnh;                 // CNH do motorista
     private boolean ativo;              // Se o motorista está ativo no sistema
@@ -34,7 +25,7 @@ public class Motorista extends Pessoa {
                      String sexo, String celular, String endereco, String cnh, String nomeSocial) {
         super(nome, cpf, dataNascimento, email, sexo, celular, endereco);
         this.cnh = cnh;
-        this.ativo = true;
+        this.ativo = true; // assume que motorista começa ativo
         this.veiculos = new ArrayList<>();
         this.nomeSocial = nomeSocial;
         this.notaMedia = 0.0;
@@ -48,12 +39,75 @@ public class Motorista extends Pessoa {
     public Motorista(String nome, String cpf, String email, String celular, String cnh) {
         super(nome, cpf, LocalDate.now(), email, "Não informado", celular, "Endereço não informado");
         this.cnh = cnh;
-        this.ativo = true;
+        this.ativo = true; // assume que motorista começa ativo
         this.veiculos = new ArrayList<>();
         this.nomeSocial = nome;
         this.notaMedia = 0.0;
         this.numeroCorridas = 0;
         this.historicoCorridas = new ArrayList<>();
+    }
+
+    // ======== MÉTODOS PARA ATIVAR/DESATIVAR ========
+
+    /**
+     * Método para ativar o motorista.
+     */
+    public void ativar() {
+        if (ativo) {
+            System.out.println("Motorista " + getNome() + " já está ativo.");
+            return; // já ativo, não faz nada
+        }
+        ativo = true;
+        System.out.println("Motorista " + getNome() + " foi ativado.");
+
+        // Ativa os veículos associados definindo status como DISPONIVEL
+        for (Veiculo veiculo : veiculos) {
+            if (veiculo != null) {
+                try {
+                    // Verifica se o veículo tem o método setStatus
+                    veiculo.setStatus(enums.StatusVeiculo.DISPONIVEL);
+                    System.out.println("   Veículo " + veiculo.getModelo() + " ativado.");
+                } catch (Exception e) {
+                    System.out.println("   Aviso: Não foi possível ativar veículo " + veiculo.getModelo());
+                }
+            }
+        }
+    }
+
+    /**
+     * Método para desativar o motorista.
+     */
+    public void desativar() {
+        if (!ativo) {
+            System.out.println("Motorista " + getNome() + " já está desativado.");
+            return; // já desativado, não faz nada
+        }
+        ativo = false;
+        System.out.println("Motorista " + getNome() + " foi desativado.");
+
+        // Desativa os veículos associados definindo status como NAO_DISPONIVEL
+        for (Veiculo veiculo : veiculos) {
+            if (veiculo != null) {
+                try {
+                    // Verifica se o veículo tem o método setStatus
+                    veiculo.setStatus(enums.StatusVeiculo.NAO_DISPONIVEL);
+                    System.out.println("   Veículo " + veiculo.getModelo() + " desativado.");
+                } catch (Exception e) {
+                    System.out.println("   Aviso: Não foi possível desativar veículo " + veiculo.getModelo());
+                }
+            }
+        }
+    }
+
+    /**
+     * Método para alternar status entre ativo e desativado.
+     */
+    public void alternarStatus() {
+        if (ativo) {
+            desativar();
+        } else {
+            ativar();
+        }
     }
 
     // ======== MÉTODOS DE NEGÓCIO ========
@@ -66,7 +120,6 @@ public class Motorista extends Pessoa {
             veiculos.add(veiculo);
             // Tenta associar o motorista ao veículo se o método existir
             try {
-                veiculo.getClass().getMethod("associarMotorista", Motorista.class);
                 veiculo.associarMotorista(this);
             } catch (Exception e) {
                 // Método não existe, ignora
@@ -79,10 +132,14 @@ public class Motorista extends Pessoa {
      */
     public boolean removerVeiculo(Veiculo veiculo) {
         if (veiculo != null) {
-            // Tenta desassociar o motorista do veículo se o método existir
+            // Tenta desassociar o motorista do veículo
             try {
-                veiculo.getClass().getMethod("desassociarMotorista");
-                veiculo.desassociarMotorista();
+                // Como a classe Veiculo não tem método desassociarMotorista,
+                // vamos apenas definir o motoristaAssociado como null se possível
+                if (veiculo.getMotoristaAssociado() == this) {
+                    // Precisa de reflexão ou método setter para motoristaAssociado
+                    // Se não houver setter, não podemos remover a associação
+                }
             } catch (Exception e) {
                 // Método não existe, ignora
             }
@@ -101,42 +158,6 @@ public class Motorista extends Pessoa {
             }
         }
         return false;
-    }
-
-    /**
-     * Ativa o motorista.
-     */
-    public void ativar() {
-        this.ativo = true;
-        System.out.println("✅ Motorista " + this.getNome() + " ativado.");
-    }
-
-    /**
-     * Desativa o motorista e todos os veículos associados.
-     */
-    public void desativar() {
-        this.ativo = false;
-        // Tenta desativar veículos se o método existir
-        for (Veiculo veiculo : veiculos) {
-            try {
-                veiculo.getClass().getMethod("desativar");
-                veiculo.desativar();
-            } catch (Exception e) {
-                // Método não existe, ignora
-            }
-        }
-        System.out.println("⏸️ Motorista " + this.getNome() + " desativado.");
-    }
-
-    /**
-     * Alterna o status do motorista (ativa/desativa).
-     */
-    public void alternarStatus() {
-        if (this.ativo) {
-            desativar();
-        } else {
-            ativar();
-        }
     }
 
     /**
@@ -181,22 +202,14 @@ public class Motorista extends Pessoa {
         System.out.println("✅ Corrida registrada para motorista: " + this.nomeSocial);
         System.out.println("   Total de corridas: " + this.numeroCorridas);
         
-        // Atualiza status dos veículos de forma segura
+        // Atualiza status dos veículos para EM_VIAGEM
         for (Veiculo veiculo : veiculos) {
             try {
-                // Verifica se o veículo tem o método setStatus
                 if (veiculo != null) {
-                    // Tenta usar reflexão para verificar o tipo do parâmetro
-                    Class<?>[] paramTypes = veiculo.getClass().getMethod("setStatus", StatusVeiculo.class).getParameterTypes();
-                    if (paramTypes[0].equals(StatusVeiculo.class)) {
-                        veiculo.setStatus(StatusVeiculo.EM_VIAGEM);
-                    } else {
-                        // Se o tipo for diferente, usa um método alternativo
-                        veiculo.getClass().getMethod("iniciarViagem").invoke(veiculo);
-                    }
+                    veiculo.setStatus(enums.StatusVeiculo.EM_VIAGEM);
                 }
             } catch (Exception e) {
-                // Método não existe ou parâmetro incompatível
+                // Método não existe
                 System.out.println("   Aviso: Não foi possível atualizar status do veículo");
             }
         }
@@ -241,7 +254,7 @@ public class Motorista extends Pessoa {
             for (Veiculo veiculo : veiculos) {
                 try {
                     if (veiculo != null) {
-                        veiculo.setStatus(StatusVeiculo.DISPONIVEL);
+                        veiculo.setStatus(enums.StatusVeiculo.DISPONIVEL);
                     }
                 } catch (Exception e) {
                     // Método não existe
@@ -261,8 +274,8 @@ public class Motorista extends Pessoa {
         for (Veiculo veiculo : veiculos) {
             try {
                 if (veiculo != null) {
-                    StatusVeiculo status = veiculo.getStatus();
-                    if (status == StatusVeiculo.DISPONIVEL) {
+                    enums.StatusVeiculo status = veiculo.getStatus();
+                    if (status == enums.StatusVeiculo.DISPONIVEL) {
                         return true;
                     }
                 }
@@ -282,8 +295,8 @@ public class Motorista extends Pessoa {
         for (Veiculo veiculo : veiculos) {
             try {
                 if (veiculo != null) {
-                    StatusVeiculo status = veiculo.getStatus();
-                    if (status == StatusVeiculo.DISPONIVEL) {
+                    enums.StatusVeiculo status = veiculo.getStatus();
+                    if (status == enums.StatusVeiculo.DISPONIVEL) {
                         return veiculo;
                     }
                 }
@@ -302,7 +315,8 @@ public class Motorista extends Pessoa {
         for (Veiculo veiculo : veiculos) {
             try {
                 if (veiculo != null) {
-                    String tipoVeiculo = veiculo.getTipo();
+                    // Como Veiculo é abstrata, vamos verificar a classe concreta
+                    String tipoVeiculo = veiculo.getClass().getSimpleName();
                     if (tipoVeiculo != null && tipoVeiculo.equalsIgnoreCase(tipo)) {
                         return true;
                     }
@@ -374,20 +388,14 @@ public class Motorista extends Pessoa {
             for (int i = 0; i < veiculos.size(); i++) {
                 Veiculo v = veiculos.get(i);
                 sb.append("  ").append(i + 1).append(". ");
+                sb.append(v.getModelo()).append(" (")
+                  .append(v.getPlaca()).append(") - ")
+                  .append(v.getCor());
                 
                 try {
-                    sb.append(v.getModelo()).append(" (")
-                      .append(v.getPlaca()).append(") - ")
-                      .append(v.getTipo());
-                      
-                    try {
-                        sb.append(" - Status: ").append(v.getStatus());
-                    } catch (Exception e) {
-                        sb.append(" - Status: Disponível");
-                    }
-                    
+                    sb.append(" - Status: ").append(v.getStatus());
                 } catch (Exception e) {
-                    sb.append("Veículo ").append(i + 1);
+                    sb.append(" - Status: Disponível");
                 }
                 sb.append("\n");
             }
